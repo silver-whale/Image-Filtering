@@ -223,7 +223,7 @@ def hysteresis(img):
         for i in range(4):
             nx = row + dx[i]
             ny = col + dy[i]
-            st.append([nx, ny])               
+            stack.append([nx, ny])               
 
     # Show picture
     res = img
