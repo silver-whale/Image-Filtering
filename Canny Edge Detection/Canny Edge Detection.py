@@ -86,7 +86,7 @@ def sobel_filters(img):
         [-1, -2, -1]    
     ], dtype='float32')
     
-    # convolve2d function includes array reversing (flip)
+    # convolve2d function includes array reversing(fil = fil.T)
     # Get X and Y intensity arrays
     x_intensity = convolve2d(img, x_filter)
     y_intensity = convolve2d(img, y_filter)
