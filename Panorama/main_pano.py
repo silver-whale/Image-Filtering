@@ -43,6 +43,41 @@ def create_pano(
     plt.imshow(result)
     plt.show()
 
+def fountain():
+    canvas_height = 1200
+    canvas_width = 2400
+    image_list = ['fountain4', 'fountain0']
+
+    num_iter = 50
+    tol = 12
+    ratio_thres = 0.4
+    image_list = [op.join(path, im) for im in image_list]
+    create_pano(image_list, ratio_thres, canvas_height, canvas_width,
+                num_iter, tol, figsize=(20, 20))
+
+def garden():
+    canvas_height = 1200
+    canvas_width = 2200
+    image_list = ['garden0','garden3', 'garden4']
+
+    num_iter = 50
+    tol = 15
+    ratio_thres = 0.5
+    image_list = [op.join(path, im) for im in image_list]
+    create_pano(image_list, ratio_thres, canvas_height, canvas_width,
+                num_iter, tol, figsize=(20, 20))
+
+def irving_out():
+    canvas_height = 1500
+    canvas_width = 2400
+    image_list = ['irving_out3','irving_out6', 'irving_out5']
+
+    num_iter = 50
+    tol = 10
+    ratio_thres = 0.4
+    image_list = [op.join(path, im) for im in image_list]
+    create_pano(image_list, ratio_thres, canvas_height, canvas_width,
+                num_iter, tol, figsize=(20, 20))
 
 def main():
     canvas_height = 600
@@ -50,12 +85,18 @@ def main():
     image_list = ['Rainier1','Rainier2', 'Rainier3', 'Rainier4', 'Rainier5', 'Rainier6']
 
     num_iter = 50
-    tol = 20
-    ratio_thres = 0.9
+    tol = 5
+    ratio_thres = 0.2
     image_list = [op.join(path, im) for im in image_list]
     create_pano(image_list, ratio_thres, canvas_height, canvas_width,
                 num_iter, tol, figsize=(20, 20))
 
 if __name__ == '__main__':
     main()
+    fountain()
+    garden()
+    irving_out()
+
+
+
 
