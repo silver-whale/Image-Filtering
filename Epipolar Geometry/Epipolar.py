@@ -4,8 +4,14 @@ import matplotlib.pyplot as plt
 img1 = plt.imread('./data/warrior_a.jpg')
 img2 = plt.imread('./data/warrior_b.jpg')
 
+i1 = plt.imread('./data/graffiti_a.jpg')
+i2 = plt.imread('./data/graffiti_b.jpg')
+
 cor1 = np.load("./data/warrior_a.npy")
 cor2 = np.load("./data/warrior_b.npy")
+
+c1 = np.load("./data/graffiti_a.npy")
+c2 = np.load("./data/graffiti_b.npy")
 
 def compute_fundamental(x1,x2):
     n = x1.shape[1]
@@ -13,17 +19,39 @@ def compute_fundamental(x1,x2):
         exit(1)
         
     F = None
-    ### YOUR CODE BEGINS HERE
     
-    # build matrix for equations in Page 51
-    
-    # compute the solution in Page 51
-        
-    # constrain F: make rank 2 by zeroing out last singular value (Page 52)
+    # x1, x2 is already Transposed(x = (u,v,1).Transpose)
 
-    ### YOUR CODE ENDS HERE
+
+    # make A matrix, size = Nx9
+    # uu', vu', u', uv', vv', v', u, v, 1
+    A = np.zeros((n,9))
+    for i in range(n):
+        A[i] = [ x1[0,i]*x2[0,i], x1[0,i]*x2[1,i], x1[0,i]*x2[2,i],
+                x1[1,i]*x2[0,i], x1[1,i]*x2[1,i], x1[1,i]*x2[2,i],
+                x1[2,i]*x2[0,i], x1[2,i]*x2[1,i], x1[2,i]*x2[2,i] ]
+
+    # numpy.SVD returns u, s, and vh
+    # U: nxn, Sigma: nx9, vh: 9x9
+    # https://numpy.org/doc/stable/reference/generated/numpy.linalg.svd.html
+
+
+    # Compute F
+    u, s, vh = np.linalg.svd(A, full_matrices=True)
+    v = vh.T
+    F = v[:, -1].reshape(3,3)
+
+    # Compute F'
+    u, s, vh = np.linalg.svd(F, full_matrices=True)
+
+    # Last row in Sigma should be zero -> rank(F) = 2
+    s[2] = 0
+
+    # Use diagonal values
+    s = np.diag(s)
+    F = np.dot(u, np.dot(s, vh))
     
-    return F
+    return F/F[2,2]
 
 
 def compute_norm_fundamental(x1,x2):
@@ -56,10 +84,17 @@ def compute_norm_fundamental(x1,x2):
 def compute_epipoles(F):
     e1 = None
     e2 = None
-    ### YOUR CODE BEGINS HERE
-    pass
-    ### YOUR CODE ENDS HERE
     
+    # Use SVD to compute e1, e2 (1x3 -> change the last value to 1)
+    u, s, vh = np.linalg.svd(F)
+    e1 = vh[-1]
+    # Change last value to 1
+    e1 = e1 / e1[-1]
+    
+    u, s, vh = np.linalg.svd(F.T)
+    e2 = vh[-1]
+    e2 = e2 / e2[-1]
+
     return e1, e2
 
 
@@ -67,10 +102,39 @@ def draw_epipolar_lines(img1, img2, cor1, cor2):
     F = compute_norm_fundamental(cor1, cor2)
 
     e1, e2 = compute_epipoles(F)
-    ### YOUR CODE BEGINS HERE
-    pass
-    ### YOUR CODE ENDS HERE
+    
+    fig, axes = plt.subplots(1, 2, figsize=(20, 20))
+
+    # Y value starts from top, sequence is different from x value
+    axes[0].set_xlim (0,img1.shape[1])
+    axes[0].set_ylim (img1.shape[0],0)
+    axes[1].set_xlim (0,img1.shape[1])
+    axes[1].set_ylim (img1.shape[0],0)
+    
+    axes[0].imshow(img1)
+    axes[1].imshow(img2)
+
+
+    for i in range(cor1.shape[1]):
+        axes[0].scatter(cor1[0][i], cor1[1][i], marker = 'o')
+        axes[1].scatter(cor2[0][i], cor2[1][i], marker = 'o')
+
+        x1 = np.array([e2[0], cor1[0][i]])
+        y1 = np.array([e2[1], cor1[1][i]])
+
+        x2 = np.array([e1[0], cor2[0][i]])
+        y2 = np.array([e1[1], cor2[1][i]])
+
+        s1, d1 = np.polyfit(x1, y1, 1)
+        s2, d2 = np.polyfit(x2, y2, 1)
+
+        x = np.linspace(0, img1.shape[1])
+        axes[0].plot(x, s1*x + d1)
+        axes[1].plot(x, s2*x + d2)
+
+    plt.show()
 
     return
 
 draw_epipolar_lines(img1, img2, cor1, cor2)
+draw_epipolar_lines(i1, i2, c1, c2)
