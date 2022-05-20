@@ -22,7 +22,6 @@ def compute_fundamental(x1,x2):
     
     # x1, x2 is already Transposed(x = (u,v,1).Transpose)
 
-
     # make A matrix, size = Nx9
     # uu', vu', u', uv', vv', v', u, v, 1
     A = np.zeros((n,9))
@@ -35,11 +34,13 @@ def compute_fundamental(x1,x2):
     # U: nxn, Sigma: nx9, vh: 9x9
     # https://numpy.org/doc/stable/reference/generated/numpy.linalg.svd.html
 
+    # In SVD, Orthogonal Matrix's last row contains Eigenvectors of A(t)A -> We use [-1] row of this matrix
 
     # Compute F
     u, s, vh = np.linalg.svd(A, full_matrices=True)
     v = vh.T
     F = v[:, -1].reshape(3,3)
+    # Last row contains Eigenvectors of A(t)A
 
     # Compute F'
     u, s, vh = np.linalg.svd(F, full_matrices=True)
@@ -51,7 +52,7 @@ def compute_fundamental(x1,x2):
     s = np.diag(s)
     F = np.dot(u, np.dot(s, vh))
     
-    return F/F[2,2]
+    return F
 
 
 def compute_norm_fundamental(x1,x2):
@@ -87,6 +88,7 @@ def compute_epipoles(F):
     
     # Use SVD to compute e1, e2 (1x3 -> change the last value to 1)
     u, s, vh = np.linalg.svd(F)
+    # Last row = Eigenvector
     e1 = vh[-1]
     # Change last value to 1
     e1 = e1 / e1[-1]
@@ -114,20 +116,24 @@ def draw_epipolar_lines(img1, img2, cor1, cor2):
     axes[0].imshow(img1)
     axes[1].imshow(img2)
 
-
+    # For every points
     for i in range(cor1.shape[1]):
+        # Mark the point
         axes[0].scatter(cor1[0][i], cor1[1][i], marker = 'o')
         axes[1].scatter(cor2[0][i], cor2[1][i], marker = 'o')
 
+        # Draw a line(e2-cor1, e1-cor2)
         x1 = np.array([e2[0], cor1[0][i]])
         y1 = np.array([e2[1], cor1[1][i]])
 
         x2 = np.array([e1[0], cor2[0][i]])
         y2 = np.array([e1[1], cor2[1][i]])
 
+        # Calculate the gradient and intercept
         s1, d1 = np.polyfit(x1, y1, 1)
         s2, d2 = np.polyfit(x2, y2, 1)
 
+        # Draw linear function
         x = np.linspace(0, img1.shape[1])
         axes[0].plot(x, s1*x + d1)
         axes[1].plot(x, s2*x + d2)
